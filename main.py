@@ -23,4 +23,4 @@ print(m.group(1))
 
 response = requests.get("https://hololive-official-cardgame.com/wp-content/images/cardlist/hSD01/hSD01-001_OSR.png")
 img = Image.open(BytesIO(response.content))
-img.save("image.png")
+img.save("imgs/image.png")
