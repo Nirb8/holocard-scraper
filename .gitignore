@@ -1,2 +1,5 @@
 
 /imgs
+*.tsv
+*.html
+*.json
