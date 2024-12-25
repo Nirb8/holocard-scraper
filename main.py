@@ -3,7 +3,7 @@ from PIL import Image
 import requests
 import re
 import json
-
+import cutlet
 
 def get_total_card_number():
     r = requests.get("https://hololive-official-cardgame.com/cardlist/cardsearch/?keyword=&attribute%5B%5D=all&expansion_name=&card_kind%5B%5D=all&rare%5B%5D=all&bloom_level%5B%5D=all&parallel%5B%5D=all")
@@ -15,6 +15,9 @@ def get_total_card_number():
     m = re.search(card_count_rx, content)
 
     return int(m.group(1))
+def strip_whitespace_brackets_and_quotes_and_lowercase(str):
+    return re.sub(r'(\]|\[|:|\\|,|{|}|\"|\s|\u180B|\u200B|\u200C|\u200D|\u2060|\uFEFF)+', '', str).lower()
+
 
 
 cards = {}
@@ -175,17 +178,12 @@ def get_card_from_official_site(id):
 
     return card
 
-for i in range(1, 20):
+for i in range(1, 2):
     print(f"parsing {i}")
     card = get_card_from_official_site(i)
-    cards[card["id"]] = card
+    cards[card["id"].lower()] = card
 
-# Convert the list of dictionaries to a JSON string
-json_data = json.dumps(cards, indent=4, ensure_ascii=False)
 
-# Optionally, save the JSON string to a file
-with open("data.json", "w") as f:
-    f.write(json_data)
 
 
 # with open('soraAzStarter.tsv', 'r') as file:
@@ -194,13 +192,70 @@ with open("data.json", "w") as f:
 # https://docs.google.com/spreadsheets/d/1IdaueY-Jw8JXjYLOhA9hUd2w0VRBao9Z1URJwmCWJ64/export?gid=474823915&exportFormat=tsv
 
 base_sheet = 'https://docs.google.com/spreadsheets/d/1IdaueY-Jw8JXjYLOhA9hUd2w0VRBao9Z1URJwmCWJ64/export?gid={gid}&exportFormat=tsv'
-sheet_gids = []
+# sheet_gids = [474823915, # SorAz start deck
+#               1874575099, # Ayame start deck
+#               1673708877, # Okayu start deck
+#               1905076073, # Choco start deck
+#               994570439, # Blooming Radiance booster
+#               1642260809 # Quintet Spectrum booster
+#               1114537117, # Starter Cheer set
+#               630131808, # PR cards/Birthday Goods
+#               1568103987, # Promo Cards
+#               ]
+sheet_gids = [474823915]
 
-# gid = 1874575099
-# sheet_request = base_sheet.format(gid = gid)
-# r = requests.get(sheet_request)
-# sheet_content = r.content.decode('utf-8', 'ignore')
+for gid in sheet_gids:
+    sheet_request = base_sheet.format(gid = gid)
+    r = requests.get(sheet_request)
+    sheet_content = r.content.decode('utf-8', 'ignore')
+    # print(sheet_content)
+    sheetlines = sheet_content.splitlines()[1:]
+    for line in sheetlines:
+        tl_card = line.split("\t")
+        print(tl_card)
+        en_content = {}
+        card_id = tl_card[0].lower()
+        en_content["name"] = tl_card[1]
+        en_content["type"] = tl_card[3]
+        en_content["color"] = tl_card[5]
+        en_content["tags"] = tl_card[7].split(" ")
+        en_content["text"] = tl_card[8]
 
-# f = open(f'{gid}.tsv', 'w', encoding='utf-8')
-# f.write(sheet_content)
-# f.close()
+        if(card_id in cards):
+            cards[card_id]["translated_content_en"] = en_content
+        
+        # 'Number', 'Card Name "JP (EN)"', 'Image', 'Type', 'Rarity', 'Color', 'LIFE/HP', 'Tags', 'Text', 'No. in deck'
+    print(len(sheetlines))
+    # f = open(f'{gid}.tsv', 'w', encoding='utf-8')
+    # f.write(sheet_content)
+    # f.close()
+search_strings = {}
+
+for card in cards.values():
+    # perform the search string smush
+    card_id = card["id"].lower()
+    card_as_json = json.dumps(card, indent=4, ensure_ascii=False)
+    card_stripped = strip_whitespace_brackets_and_quotes_and_lowercase(card_as_json)
+
+    katsu = cutlet.Cutlet() # hepburn
+    katu = cutlet.Cutlet('kunrei') # kunreishiki
+    nkatu = cutlet.Cutlet('nihon') # nihonshiki
+
+    card_stripped_hepburn = strip_whitespace_brackets_and_quotes_and_lowercase(katsu.romaji(card_stripped))
+    card_stripped_kunrei = strip_whitespace_brackets_and_quotes_and_lowercase(katu.romaji(card_stripped))
+    card_stripped_nihon = strip_whitespace_brackets_and_quotes_and_lowercase(nkatu.romaji(card_stripped))
+
+    total_search_string = f"{card_stripped}|{card_stripped_hepburn}|{card_stripped_kunrei}|{card_stripped_nihon}"
+    search_strings[card_id] = total_search_string
+
+for id in search_strings.keys():
+    cards[id]["search_string"] = search_strings[id]
+
+
+
+# Convert the list of dictionaries to a JSON string
+json_data = json.dumps(cards, indent=4, ensure_ascii=False)
+
+# Optionally, save the JSON string to a file
+with open("data.json", "w") as f:
+    f.write(json_data)
