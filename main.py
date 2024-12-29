@@ -178,7 +178,7 @@ def get_card_from_official_site(id):
 
     return card
 
-for i in range(1, 2):
+for i in range(1, 24):
     print(f"parsing {i}")
     card = get_card_from_official_site(i)
     cards[card["id"].lower()] = card
