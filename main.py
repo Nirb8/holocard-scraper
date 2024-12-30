@@ -239,15 +239,12 @@ for gid in sheet_gids:
         if(card_id in cards):
             cards[card_id]["translated_content_en"] = en_content
         
-        # 'Number', 'Card Name "JP (EN)"', 'Image', 'Type', 'Rarity', 'Color', 'LIFE/HP', 'Tags', 'Text', 'No. in deck'
     print(len(sheetlines))
-    # f = open(f'{gid}.tsv', 'w', encoding='utf-8')
-    # f.write(sheet_content)
-    # f.close()
+
 search_strings = {}
 
 for card in cards.values():
-    # perform the search string smush
+    # perform the search string smush/romanization
     card_id = card["id"].lower()
     card_as_json = json.dumps(card, indent=4, ensure_ascii=False)
     card_stripped = strip_whitespace_brackets_and_quotes_and_lowercase(card_as_json)
@@ -266,11 +263,9 @@ for card in cards.values():
 for id in search_strings.keys():
     cards[id]["search_string"] = search_strings[id]
 
-
-
 # Convert the list of dictionaries to a JSON string
 json_data = json.dumps(cards, indent=4, ensure_ascii=False)
 
-# Optionally, save the JSON string to a file
+# Save the JSON string to a file
 with open("data.json", "w") as f:
     f.write(json_data)
