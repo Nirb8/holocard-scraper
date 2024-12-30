@@ -96,6 +96,13 @@ def get_card_from_official_site(id):
         # print(card_illustrator)
         card["illustrator"] =  card_illustrator
 
+    abilitytextrx = "<dt>能力テキスト</dt><dd>(.*?)</dd>"
+    m = re.search(abilitytextrx, content_oneline)
+    if(m):
+        ability_text_raw = m.group(1)
+        ability_text = re.sub('<br/>', '\n', ability_text_raw)
+        card["ability_text"] = ability_text
+
     if "ホロメン" in card_type:
         card_colorrx = "色</dt>.*?alt=\"(.*?)\""
         m = re.search(card_colorrx, content_oneline)
@@ -166,19 +173,20 @@ def get_card_from_official_site(id):
 
             # print(arts)
             card["arts"] = arts
-
+            return card
             # still need to figure out how to parse gift, collab and bloom effects
         else:
             # must be an oshi holomen, get oshi holomen specific fields
-            pass
+            return card
 
     # f = open('output.html', 'w', encoding='utf-8')
     # f.write(content)
     # f.close()
+    # for "other" cards (support/cheer)
 
     return card
 
-for i in range(1, 24):
+for i in range(1, 23):
     print(f"parsing {i}")
     card = get_card_from_official_site(i)
     cards[card["id"].lower()] = card
@@ -209,17 +217,24 @@ for gid in sheet_gids:
     r = requests.get(sheet_request)
     sheet_content = r.content.decode('utf-8', 'ignore')
     # print(sheet_content)
+    title_row = sheet_content.splitlines()[0].split("\t")
+    title_dict = {}
+    title_index = 0
+    for title in title_row:
+        title_dict[title.lower()] = title_index
+        title_index += 1
+    print(title_dict)
     sheetlines = sheet_content.splitlines()[1:]
     for line in sheetlines:
         tl_card = line.split("\t")
         print(tl_card)
         en_content = {}
         card_id = tl_card[0].lower()
-        en_content["name"] = tl_card[1]
-        en_content["type"] = tl_card[3]
-        en_content["color"] = tl_card[5]
-        en_content["tags"] = tl_card[7].split(" ")
-        en_content["text"] = tl_card[8]
+        en_content["name"] = tl_card[title_dict["card name \"jp (en)\"".lower()]]
+        en_content["type"] = tl_card[title_dict["type"]]
+        en_content["color"] = tl_card[title_dict["color"]]
+        en_content["tags"] = tl_card[title_dict["tags"]].split(" ")
+        en_content["text"] = tl_card[title_dict["text"]]
 
         if(card_id in cards):
             cards[card_id]["translated_content_en"] = en_content
