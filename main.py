@@ -176,7 +176,27 @@ def get_card_from_official_site(id):
             return card
             # still need to figure out how to parse gift, collab and bloom effects
         else:
+            life_rx = "<dt>LIFE</dt><dd>(.*?)</dd>"
+            m = re.search(life_rx, content_oneline)
+            card["life"] = int(m.group(1))
             # must be an oshi holomen, get oshi holomen specific fields
+            oshi_skill_rx = "<p>推しスキル</p><p>.*?(\\[.*?\\])<span>(.*?)</span>(.*?)</p>"
+            m = re.search(oshi_skill_rx, content_oneline)
+            oshi_skill = {}
+            oshi_skill["name"] = m.group(2)
+            oshi_skill["cost_string"] = m.group(1)
+            oshi_skill["cost"] = int(re.search("(\\d+)", m.group(1)).group(1))
+            oshi_skill["effect"] = m.group(3)
+            card["oshi_skill"] = oshi_skill
+
+            sp_oshi_skill_rx = "<p>SP推しスキル</p><p>.*?(\\[.*?\\])<span>(.*?)</span>(.*?)</p>"
+            m = re.search(sp_oshi_skill_rx, content_oneline)
+            sp_oshi_skill = {}
+            sp_oshi_skill["name"] = m.group(2)
+            sp_oshi_skill["cost_string"] = m.group(1)
+            sp_oshi_skill["cost"] = int(re.search("(\\d+)", m.group(1)).group(1))
+            sp_oshi_skill["effect"] = m.group(3)
+            card["sp_oshi_skill"] = sp_oshi_skill
             return card
 
     # f = open('output.html', 'w', encoding='utf-8')
@@ -186,7 +206,7 @@ def get_card_from_official_site(id):
 
     return card
 
-for i in range(1, 23):
+for i in range(1, 3):
     print(f"parsing {i}")
     card = get_card_from_official_site(i)
     cards[card["id"].lower()] = card
@@ -223,11 +243,11 @@ for gid in sheet_gids:
     for title in title_row:
         title_dict[title.lower()] = title_index
         title_index += 1
-    print(title_dict)
+    # Sprint(title_dict)
     sheetlines = sheet_content.splitlines()[1:]
     for line in sheetlines:
         tl_card = line.split("\t")
-        print(tl_card)
+        # print(tl_card)
         en_content = {}
         card_id = tl_card[0].lower()
         en_content["name"] = tl_card[title_dict["card name \"jp (en)\"".lower()]]
