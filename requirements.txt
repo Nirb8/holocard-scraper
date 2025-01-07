@@ -1,6 +1,11 @@
 certifi==2024.12.14
 charset-normalizer==3.4.0
+cutlet==0.4.0
+fugashi==1.4.0
 idna==3.10
+jaconv==0.4.0
+mojimoji==0.0.13
 pillow==11.0.0
 requests==2.32.3
+unidic-lite==1.0.8
 urllib3==2.3.0
