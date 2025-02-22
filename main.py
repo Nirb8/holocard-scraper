@@ -44,7 +44,15 @@ def get_card_from_official_site(id):
     # print("card number:")
     # print(card_number)
     card = {}
-    card["id"] = card_number
+
+    rarityrx = "<dt>レアリティ</dt><dd>(.*?)</dd>"
+    m = re.search(rarityrx, content_oneline)
+    card_rarity = m.group(1)
+    # print("card rarity:")
+    # print(card_rarity)
+    card["rarity"] = card_rarity
+    card["id"] = f'{card_rarity} {card_number}'
+
 
     imgrx = ".*(wp-content/images/cardlist/.*\\.png)"
     m = re.search(imgrx, content)
@@ -65,12 +73,6 @@ def get_card_from_official_site(id):
     # print(card_type)
     card["type"] = card_type
 
-    rarityrx = "<dt>レアリティ</dt><dd>(.*?)</dd>"
-    m = re.search(rarityrx, content_oneline)
-    card_rarity = m.group(1)
-    # print("card rarity:")
-    # print(card_rarity)
-    card["rarity"] = card_rarity
 
     tagsrx = "cardlist/cardsearch\\?.*?>(.*?)<"
     card_tags = []
@@ -238,7 +240,7 @@ def get_card_from_official_site(id):
 
     return card
 
-for i in range(1, 200):
+for i in range(1, 300):
     print(f"parsing {i}")
     card = get_card_from_official_site(i)
     cards[card["id"].lower()] = card
@@ -262,7 +264,7 @@ base_sheet = 'https://docs.google.com/spreadsheets/d/1IdaueY-Jw8JXjYLOhA9hUd2w0V
 #               630131808, # PR cards/Birthday Goods
 #               1568103987, # Promo Cards
 #               ]
-sheet_gids = [474823915, 994570439]
+sheet_gids = [474823915, 994570439, 1642260809]
 
 for gid in sheet_gids:
     sheet_request = base_sheet.format(gid = gid)
@@ -284,7 +286,7 @@ for gid in sheet_gids:
             print(tl_card)
             continue
         en_content = {}
-        card_id = tl_card[0].lower()
+        card_id = f'{tl_card[title_dict["rarity"]]} {tl_card[0].lower()}'
         en_content["name"] = tl_card[title_dict["card name \"jp (en)\"".lower()]]
         en_content["type"] = tl_card[title_dict["type"]]
         en_content["color"] = tl_card[title_dict["color"]]
