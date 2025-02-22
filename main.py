@@ -53,7 +53,6 @@ def get_card_from_official_site(id):
     card["rarity"] = card_rarity
     card["id"] = f'{card_rarity} {card_number}'
 
-
     imgrx = ".*(wp-content/images/cardlist/.*\\.png)"
     m = re.search(imgrx, content)
     # print("img url:")
@@ -299,6 +298,7 @@ for gid in sheet_gids:
     print(len(sheetlines))
 
 search_strings = {}
+aliases = {}
 
 for card in cards.values():
     # perform the search string smush/romanization
@@ -317,8 +317,25 @@ for card in cards.values():
     total_search_string = f"{card_stripped}|{card_stripped_hepburn}|{card_stripped_kunrei}|{card_stripped_nihon}"
     search_strings[card_id] = total_search_string
 
+    card_name = card["name"]
+    card_name_stripped = strip_whitespace_brackets_and_quotes_and_lowercase(card_name)
+
+    card_name_stripped_hepburn = strip_whitespace_brackets_and_quotes_and_lowercase(katsu.romaji(card_name_stripped))
+    card_name_stripped_kunrei = strip_whitespace_brackets_and_quotes_and_lowercase(katu.romaji(card_name_stripped))
+    card_name_stripped_nihon = strip_whitespace_brackets_and_quotes_and_lowercase(nkatu.romaji(card_name_stripped))
+    alias = ""
+    if "translated_content_en" in card:
+        alias += card["translated_content_en"]["name"]
+    else:
+        alias += card["name"]
+    alias += f'{card_name_stripped_hepburn}{card_name_stripped_kunrei}{card_name_stripped_nihon}'
+
+    aliases[card_id] =  alias
+
 for id in search_strings.keys():
     cards[id]["search_string"] = search_strings[id]
+for id in aliases.keys():
+    cards[id]["alias"] = aliases[id]
 
 # Convert the list of dictionaries to a JSON string
 json_data = json.dumps(cards, indent=4, ensure_ascii=False)
