@@ -182,6 +182,7 @@ def get_card_from_official_site(id):
                 bloom_object = {}
                 bloom_object["bloom_name"] = bloom_name
                 bloom_object["bloom_text"] = bloom_text
+                card["bloom_effect"] = bloom_object
             
             card_collab_effect_rx = "alt=\"コラボエフェクト\".*?>\"(.*?)\"</span>\"(.*?)\""
             collab_m = re.search(card_collab_effect_rx, content_oneline)
@@ -191,6 +192,7 @@ def get_card_from_official_site(id):
                 collab_object = {}
                 collab_object["collab_name"] = collab_name
                 collab_object["collab_text"] = collab_text
+                card["collab_effect"] = collab_object
 
             card_gift_effect_rx = "alt=\"ギフト\".*?>\"(.*?)\"</span>\"(.*?)\""
             gift_m = re.search(card_gift_effect_rx, content_oneline)
@@ -200,6 +202,7 @@ def get_card_from_official_site(id):
                 gift_object = {}
                 gift_object["gift_name"] = gift_name
                 gift_object["gift_text"] = gift_text
+                card["gift_effect"] = gift_object
             return card
             # still need to figure out how to parse gift, collab and bloom effects
         else:
