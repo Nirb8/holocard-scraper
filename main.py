@@ -215,7 +215,7 @@ def get_card_from_official_site(id):
             oshi_skill = {}
             oshi_skill["name"] = m.group(2)
             oshi_skill["cost_string"] = m.group(1)
-            oshi_skill["cost"] = int(re.search("(\\d+)", m.group(1)).group(1))
+            oshi_skill["cost"] = re.search("(\\w+)", m.group(1)).group(1)
             oshi_skill["effect"] = m.group(3)
             card["oshi_skill"] = oshi_skill
 
