@@ -181,8 +181,8 @@ def get_card_from_official_site(id):
                 bloom_name = bloom_m.group(1)
                 bloom_text = bloom_m.group(2)
                 bloom_object = {}
-                bloom_object["bloom_name"] = bloom_name
-                bloom_object["bloom_text"] = bloom_text
+                bloom_object["name"] = bloom_name
+                bloom_object["text"] = bloom_text
                 card["bloom_effect"] = bloom_object
             
             card_collab_effect_rx = "alt=\"コラボエフェクト\".*?>(.*?)</span>(.*?)<"
@@ -192,8 +192,8 @@ def get_card_from_official_site(id):
                 collab_name = collab_m.group(1)
                 collab_text = collab_m.group(2)
                 collab_object = {}
-                collab_object["collab_name"] = collab_name
-                collab_object["collab_text"] = collab_text
+                collab_object["name"] = collab_name
+                collab_object["text"] = collab_text
                 card["collab_effect"] = collab_object
 
             card_gift_effect_rx = "alt=\"ギフト\".*?>(.*?)</span>(.*?)<"
@@ -202,8 +202,8 @@ def get_card_from_official_site(id):
                 gift_name = gift_m.group(1)
                 gift_text = gift_m.group(2)
                 gift_object = {}
-                gift_object["gift_name"] = gift_name
-                gift_object["gift_text"] = gift_text
+                gift_object["name"] = gift_name
+                gift_object["text"] = gift_text
                 card["gift_effect"] = gift_object
             return card
             # still need to figure out how to parse gift, collab and bloom effects
@@ -238,7 +238,7 @@ def get_card_from_official_site(id):
 
     return card
 
-for i in range(1, 65):
+for i in range(1, 200):
     print(f"parsing {i}")
     card = get_card_from_official_site(i)
     cards[card["id"].lower()] = card
@@ -262,7 +262,7 @@ base_sheet = 'https://docs.google.com/spreadsheets/d/1IdaueY-Jw8JXjYLOhA9hUd2w0V
 #               630131808, # PR cards/Birthday Goods
 #               1568103987, # Promo Cards
 #               ]
-sheet_gids = [474823915]
+sheet_gids = [474823915, 994570439]
 
 for gid in sheet_gids:
     sheet_request = base_sheet.format(gid = gid)
@@ -275,11 +275,14 @@ for gid in sheet_gids:
     for title in title_row:
         title_dict[title.lower()] = title_index
         title_index += 1
-    # Sprint(title_dict)
+    # print(title_dict)
     sheetlines = sheet_content.splitlines()[1:]
     for line in sheetlines:
         tl_card = line.split("\t")
-        # print(tl_card)
+        if len(tl_card) < 9:
+            print(len(tl_card))
+            print(tl_card)
+            continue
         en_content = {}
         card_id = tl_card[0].lower()
         en_content["name"] = tl_card[title_dict["card name \"jp (en)\"".lower()]]
