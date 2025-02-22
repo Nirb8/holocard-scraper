@@ -174,31 +174,33 @@ def get_card_from_official_site(id):
             # print(arts)
             card["arts"] = arts
 
-            card_bloom_effect_rx = "alt=\"ブルームエフェクト\".*?>\"(.*?)\"</span>\"(.*?)\""
+            card_bloom_effect_rx = "alt=\"ブルームエフェクト\".*?>(.*?)</span>(.*?)<"
+
             bloom_m = re.search(card_bloom_effect_rx, content_oneline)
             if (bloom_m):
-                bloom_name = m.group(1)
-                bloom_text = m.group(2)
+                bloom_name = bloom_m.group(1)
+                bloom_text = bloom_m.group(2)
                 bloom_object = {}
                 bloom_object["bloom_name"] = bloom_name
                 bloom_object["bloom_text"] = bloom_text
                 card["bloom_effect"] = bloom_object
             
-            card_collab_effect_rx = "alt=\"コラボエフェクト\".*?>\"(.*?)\"</span>\"(.*?)\""
+            card_collab_effect_rx = "alt=\"コラボエフェクト\".*?>(.*?)</span>(.*?)<"
             collab_m = re.search(card_collab_effect_rx, content_oneline)
+
             if (collab_m):
-                collab_name = m.group(1)
-                collab_text = m.group(2)
+                collab_name = collab_m.group(1)
+                collab_text = collab_m.group(2)
                 collab_object = {}
                 collab_object["collab_name"] = collab_name
                 collab_object["collab_text"] = collab_text
                 card["collab_effect"] = collab_object
 
-            card_gift_effect_rx = "alt=\"ギフト\".*?>\"(.*?)\"</span>\"(.*?)\""
+            card_gift_effect_rx = "alt=\"ギフト\".*?>(.*?)</span>(.*?)<"
             gift_m = re.search(card_gift_effect_rx, content_oneline)
             if (gift_m):
-                gift_name = m.group(1)
-                gift_text = m.group(2)
+                gift_name = gift_m.group(1)
+                gift_text = gift_m.group(2)
                 gift_object = {}
                 gift_object["gift_name"] = gift_name
                 gift_object["gift_text"] = gift_text
