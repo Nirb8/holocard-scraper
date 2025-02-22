@@ -4,6 +4,7 @@ import requests
 import re
 import json
 import cutlet
+import traceback
 
 def get_total_card_number():
     r = requests.get("https://hololive-official-cardgame.com/cardlist/cardsearch/?keyword=&attribute%5B%5D=all&expansion_name=&card_kind%5B%5D=all&rare%5B%5D=all&bloom_level%5B%5D=all&parallel%5B%5D=all")
@@ -263,7 +264,7 @@ base_sheet = 'https://docs.google.com/spreadsheets/d/1IdaueY-Jw8JXjYLOhA9hUd2w0V
 #               630131808, # PR cards/Birthday Goods
 #               1568103987, # Promo Cards
 #               ]
-sheet_gids = [474823915, 994570439, 1642260809]
+sheet_gids = [474823915, 994570439, 1642260809, 1874575099]
 
 for gid in sheet_gids:
     sheet_request = base_sheet.format(gid = gid)
@@ -274,7 +275,10 @@ for gid in sheet_gids:
     title_dict = {}
     title_index = 0
     for title in title_row:
+        if (title.lower() in title_dict):
+            continue
         title_dict[title.lower()] = title_index
+        print(f"{title.lower()}: {title_index}")
         title_index += 1
     # print(title_dict)
     sheetlines = sheet_content.splitlines()[1:]
@@ -285,15 +289,23 @@ for gid in sheet_gids:
             print(tl_card)
             continue
         en_content = {}
-        card_id = f'{tl_card[title_dict["rarity"]]} {tl_card[0].lower()}'
-        en_content["name"] = tl_card[title_dict["card name \"jp (en)\"".lower()]]
-        en_content["type"] = tl_card[title_dict["type"]]
-        en_content["color"] = tl_card[title_dict["color"]]
-        en_content["tags"] = tl_card[title_dict["tags"]].split(" ")
-        en_content["text"] = tl_card[title_dict["text"]]
+        try:
+            card_id = f'{tl_card[title_dict["rarity"]]} {tl_card[0].lower()}'
+            en_content["name"] = tl_card[title_dict["card name \"jp (en)\"".lower()]]
+            en_content["type"] = tl_card[title_dict["type"]]
+            en_content["color"] = tl_card[title_dict["color"]]
+            en_content["tags"] = tl_card[title_dict["tags"]].split(" ")
+            en_content["text"] = tl_card[title_dict["text"]]
 
-        if(card_id in cards):
-            cards[card_id]["translated_content_en"] = en_content
+            if(card_id in cards):
+                cards[card_id]["translated_content_en"] = en_content
+        except Exception as e:
+            traceback.print_exception(type(e), e, e.__traceback__)
+            print("failed to parse for")
+            print(f"card row length: {len(tl_card)}")
+            print(tl_card)
+            continue
+
         
     print(len(sheetlines))
 
